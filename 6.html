@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zadanie 6: Połącz pory roku z obrazkami</title>
+    <style>
+        /* General body styling */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Main container for the quiz */
+        .quiz-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+        }
+
+        /* Container for matching sections */
+        .matching-sections {
+            display: flex;
+            flex-direction: column; /* Default to column for small screens */
+            gap: 20px;
+            justify-content: space-around;
+            margin-bottom: 25px;
+        }
+
+        /* Image and caption columns */
+        .images-column, .captions-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        /* Image styling */
+        .image-item img {
+            width: 150px; /* Slightly larger images for clarity */
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+
+        .image-item img:hover {
+            transform: scale(1.03);
+        }
+
+        /* Caption styling */
+        .caption-item {
+            padding: 12px 20px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
+            min-width: 120px; /* Ensure captions have a minimum width */
+            text-align: center;
+            font-size: 1.1em;
+        }
+
+        .caption-item:hover {
+            background-color: #d0d0d0;
+            transform: scale(1.02);
+        }
+
+        /* Selected state for images and captions */
+        .image-item.selected img, .caption-item.selected {
+            border-color: #007bff;
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
+        }
+
+        /* Matched state for images and captions */
+        .image-item.matched img, .caption-item.matched {
+            border-color: green;
+            opacity: 0.7;
+            cursor: default;
+        }
+        .image-item.matched img:hover, .caption-item.matched:hover {
+             transform: none; /* No hover effect after matched */
+             background-color: #e0e0e0; /* Reset hover background for matched captions */
+        }
+
+
+        /* Feedback messages */
+        #message {
+            margin-top: 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #555;
+        }
+        .correct-feedback {
+            color: green;
+        }
+        .incorrect-feedback {
+            color: red;
+        }
+
+        /* Button container styling */
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        /* Button styling */
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Media queries for responsiveness */
+        @media (min-width: 600px) {
+            .matching-sections {
+                flex-direction: row; /* Change to row for wider screens */
+            }
+            .images-column, .captions-column {
+                flex-direction: column; /* Keep column for items within columns */
+            }
+        }
+
+        @media (max-width: 480px) {
+            .quiz-container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+            .image-item img {
+                width: 100px;
+                height: 100px;
+            }
+            .caption-item {
+                padding: 8px 12px;
+                font-size: 0.9em;
+            }
+            .button-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1>Zadanie 6: Połącz pory roku z obrazkami</h1>
+        <div class="matching-sections">
+            <div class="images-column" id="imagesColumn">
+                <!-- Obrazki zostaną dodane przez JavaScript -->
+            </div>
+            <div class="captions-column" id="captionsColumn">
+                <!-- Podpisy (pory roku) zostaną dodane przez JavaScript -->
+            </div>
+        </div>
+        <div class="button-container">
+            <button id="checkButton">Sprawdź dopasowania</button>
+            <button id="resetButton">Resetuj</button>
+            <button id="backButton">Wróć do Zadania 5</button>
+            <button id="nextButton">Dalej</button> <!-- Przycisk "Dalej" prowadzący do 7.html -->
+        </div>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        // Array of image-caption pairs for seasons with updated image URLs
+        const pairs = [
+            { id: 'img_spring', src: 'https://pl-static.z-dn.net/files/d43/9554a6afc5639384bdd3ed3a1225d1a1.bmp', alt: 'Wiosna', caption: 'wiosna' },
+            { id: 'img_summer', src: 'https://easydrawingguides.com/wp-content/uploads/2023/02/how-to-draw-a-summer-scenery-featured-image-1200.png', alt: 'Lato', caption: 'lato' },
+            { id: 'img_autumn', src: 'https://th.bing.com/th/id/R.de153cf92d6afdc8d0b26559cdf2329c?rik=yX3MAQu%2fnmN89w&riu=http%3a%2f%2fgetdrawings.com%2fimage%2fautumn-tree-drawing-53.jpg&ehk=pK7fc0xhTYA0JKEojjiiLefiDyIpA2oZ7UsoOrEsW0A%3d&risl=&pid=ImgRaw&r=0', alt: 'Jesień', caption: 'jesień' },
+            { id: 'img_winter', src: 'https://img.freepik.com/darmowe-wektory/zimowy-krajobraz-tlo-w-akwarela_23-2148348323.jpg', alt: 'Zima', caption: 'zima' }
+        ];
+
+        const imagesColumn = document.getElementById('imagesColumn');
+        const captionsColumn = document.getElementById('captionsColumn');
+        const checkButton = document.getElementById('checkButton');
+        const resetButton = document.getElementById('resetButton');
+        const backButton = document.getElementById('backButton');
+        const nextButton = document.getElementById('nextButton'); // Referencja do przycisku "Dalej"
+        const messageElement = document.getElementById('message');
+
+        let selectedImage = null;
+        let selectedCaption = null;
+        let matchedPairs = 0;
+
+        // Funkcja do tasowania tablicy (algorytm Fisher-Yates)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Funkcja do inicjalizacji gry w dopasowywanie
+        function initializeGame() {
+            imagesColumn.innerHTML = '';
+            captionsColumn.innerHTML = '';
+            messageElement.textContent = '';
+            matchedPairs = 0;
+
+            const shuffledImages = shuffleArray([...pairs]); // Płytka kopia do niezależnego tasowania
+            const shuffledCaptions = shuffleArray([...pairs]);
+
+            // Tworzenie elementów obrazków
+            shuffledImages.forEach(item => {
+                const div = document.createElement('div');
+                div.classList.add('image-item');
+                div.dataset.caption = item.caption; // Przechowuj prawidłowy podpis jako atrybut danych
+                const img = document.createElement('img');
+                img.src = item.src;
+                img.alt = item.alt;
+                // Dodaj obsługę błędu, aby wyświetlić obrazek zastępczy, jeśli oryginalny obrazek nie załaduje się
+                img.onerror = function() {
+                    this.onerror=null; // Zapobiegaj nieskończonej pętli, jeśli zastępczy obrazek nie załaduje się
+                    const width = this.width || 150; // Użyj bieżącej szerokości lub domyślnej
+                    const height = this.height || 150; // Użyj bieżącej wysokości lub domyślnej
+                    this.src = `https://placehold.co/${width}x${height}/CCCCCC/333333?text=Brak+obrazu`;
+                };
+                div.appendChild(img);
+                div.addEventListener('click', () => selectItem(div, 'image'));
+                imagesColumn.appendChild(div);
+            });
+
+            // Tworzenie elementów podpisów
+            shuffledCaptions.forEach(item => {
+                const div = document.createElement('div');
+                div.classList.add('caption-item');
+                div.textContent = item.caption;
+                div.dataset.image = item.caption; // Przechowuj powiązany alt obrazka jako atrybut danych (do dopasowywania)
+                div.addEventListener('click', () => selectItem(div, 'caption'));
+                captionsColumn.appendChild(div);
+            });
+
+            // Resetuj zaznaczenia
+            selectedImage = null;
+            selectedCaption = null;
+            updateCheckButtonState();
+        }
+
+        // Funkcja do obsługi wyboru elementu
+        function selectItem(item, type) {
+            // Jeśli już dopasowano, nic nie rób
+            if (item.classList.contains('matched')) {
+                return;
+            }
+
+            if (type === 'image') {
+                if (selectedImage) {
+                    selectedImage.classList.remove('selected');
+                }
+                selectedImage = item;
+                selectedImage.classList.add('selected');
+            } else { // type === 'caption'
+                if (selectedCaption) {
+                    selectedCaption.classList.remove('selected');
+                }
+                selectedCaption = item;
+                selectedCaption.classList.add('selected');
+            }
+            messageElement.textContent = ''; // Wyczyść poprzednie wiadomości
+            updateCheckButtonState();
+        }
+
+        // Funkcja do aktualizacji stanu przycisku sprawdzania
+        function updateCheckButtonState() {
+            if (selectedImage && selectedCaption) {
+                checkButton.disabled = false;
+            } else {
+                checkButton.disabled = true;
+            }
+        }
+
+        // Funkcja do sprawdzania, czy wybrane pary są poprawne
+        function checkMatch() {
+            if (!selectedImage || !selectedCaption) {
+                messageElement.textContent = 'Proszę wybrać obrazek i podpis!';
+                messageElement.classList.remove('correct-feedback', 'incorrect-feedback');
+                return;
+            }
+
+            const imageCaption = selectedImage.dataset.caption;
+            const captionText = selectedCaption.textContent;
+
+            if (imageCaption === captionText) {
+                messageElement.textContent = 'Poprawne dopasowanie!';
+                messageElement.className = 'correct-feedback';
+
+                selectedImage.classList.remove('selected');
+                selectedCaption.classList.remove('selected');
+
+                selectedImage.classList.add('matched');
+                selectedCaption.classList.add('matched');
+
+                // Klonuj węzeł i zastępuj, aby skutecznie usunąć wszystkie słuchacze
+                const newImageItem = selectedImage.cloneNode(true);
+                selectedImage.parentNode.replaceChild(newImageItem, selectedImage);
+                const newCaptionItem = selectedCaption.cloneNode(true);
+                selectedCaption.parentNode.replaceChild(newCaptionItem, selectedCaption);
+
+                matchedPairs++;
+                if (matchedPairs === pairs.length) {
+                    messageElement.textContent = 'Wszystkie pary dopasowane! Gratulacje!';
+                    messageElement.classList.add('correct-feedback');
+                    checkButton.disabled = true; // Wyłącz przycisk sprawdzania po dopasowaniu wszystkich
+                }
+            } else {
+                messageElement.textContent = 'Błędne dopasowanie. Spróbuj ponownie!';
+                messageElement.className = 'incorrect-feedback';
+            }
+
+            // Wyczyść zaznaczenia po sprawdzeniu
+            selectedImage = null;
+            selectedCaption = null;
+            updateCheckButtonState();
+        }
+
+        // Słuchacze zdarzeń
+        checkButton.addEventListener('click', checkMatch);
+        resetButton.addEventListener('click', initializeGame);
+        backButton.addEventListener('click', () => {
+            window.location.href = '5.html'; // Wróć do Zadania 5
+        });
+        nextButton.addEventListener('click', () => { // Nowy słuchacz zdarzeń dla przycisku "Dalej"
+            window.location.href = '7.html'; // Przekierowanie do 7.html
+        });
+
+
+        // Inicjalizuj grę po pełnym załadowaniu DOM
+        document.addEventListener('DOMContentLoaded', initializeGame);
+    </script>
+</body>
+</html>
