@@ -303,6 +303,7 @@
                 messageElement.textContent = 'Brawo! Wszystkie kwadraty pokolorowane prawidłowo!';
                 messageElement.className = 'correct-feedback';
                 checkButton.disabled = true;
+                // Redirect to 13.html
                 nextButton.style.display = 'inline-block'; // Show the "Dalej" button
             } else {
                 messageElement.textContent = 'Niestety, niektóre kolory są niepoprawne. Spróbuj ponownie.';
@@ -323,8 +324,8 @@
             window.location.href = '11.html'; // Go back to Zadanie 11
         });
         nextButton.addEventListener('click', () => {
-            alert('Gratulacje! Ukończyłeś test!'); // Placeholder for final message
-            // window.location.href = 'koniec_testu.html'; // Redirect to a summary/final page
+            alert('Przechodzisz do Zadania 13!');
+            window.location.href = '13.html'; // Redirect to 13.html
         });
 
         // Initialize the game on page load
