@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zadanie 7: Kim są te osoby?</title>
+    <style>
+        /* General body styling */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Main container for the quiz */
+        .quiz-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+        }
+
+        /* Container for matching sections */
+        .matching-sections {
+            display: flex;
+            flex-direction: column; /* Default to column for small screens */
+            gap: 20px;
+            justify-content: space-around;
+            margin-bottom: 25px;
+        }
+
+        /* Image and caption columns */
+        .images-column, .captions-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        /* Image styling */
+        .image-item img {
+            width: 130px; /* Zwiększona szerokość, aby lepiej pomieścić obrazki */
+            height: 130px; /* Zwiększona wysokość, aby lepiej pomieścić obrazki */
+            object-fit: contain; /* Obrazek będzie skalowany, aby mieścił się wewnątrz kwadratu bez przycinania */
+            border-radius: 8px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+
+        .image-item img:hover {
+            transform: scale(1.03);
+        }
+
+        /* Caption styling */
+        .caption-item {
+            padding: 12px 20px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
+            min-width: 120px; /* Ensure captions have a minimum width */
+            text-align: center;
+            font-size: 1.1em;
+        }
+
+        .caption-item:hover {
+            background-color: #d0d0d0;
+            transform: scale(1.02);
+        }
+
+        /* Selected state for images and captions */
+        .image-item.selected img, .caption-item.selected {
+            border-color: #007bff;
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
+        }
+
+        /* Matched state for images and captions */
+        .image-item.matched img, .caption-item.matched {
+            border-color: green;
+            opacity: 0.7;
+            cursor: default;
+        }
+        .image-item.matched img:hover, .caption-item.matched:hover {
+             transform: none; /* No hover effect after matched */
+             background-color: #e0e0e0; /* Reset hover background for matched captions */
+        }
+
+
+        /* Feedback messages */
+        #message {
+            margin-top: 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #555;
+        }
+        .correct-feedback {
+            color: green;
+        }
+        .incorrect-feedback {
+            color: red;
+        }
+
+        /* Button container styling */
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        /* Button styling */
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Media queries for responsiveness */
+        @media (min-width: 600px) {
+            .matching-sections {
+                flex-direction: row; /* Change to row for wider screens */
+            }
+            .images-column, .captions-column {
+                flex-direction: column; /* Keep column for items within columns */
+            }
+        }
+
+        @media (max-width: 480px) {
+            .quiz-container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+            .image-item img {
+                width: 100px; /* Dostosowanie do mniejszych ekranów */
+                height: 100px;
+            }
+            .caption-item {
+                padding: 8px 12px;
+                font-size: 0.9em;
+            }
+            .button-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1>Zadanie 7: Opowiedz, kim są te osoby?</h1>
+        <div class="matching-sections">
+            <div class="images-column" id="imagesColumn">
+                <!-- Obrazki zostaną dodane przez JavaScript -->
+            </div>
+            <div class="captions-column" id="captionsColumn">
+                <!-- Opisy zostaną dodane przez JavaScript -->
+            </div>
+        </div>
+        <div class="button-container">
+            <button id="checkButton">Sprawdź dopasowania</button>
+            <button id="resetButton">Resetuj</button>
+            <button id="backButton">Wróć do Zadania 6</button>
+            <button id="nextButton">Dalej</button> <!-- Przycisk "Dalej" prowadzący do 8.html -->
+        </div>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        // Array of image-caption pairs for professions with updated image URLs
+        const pairs = [
+            { id: 'img_lekarz', src: 'https://img.freepik.com/premium-wektory/samiec-mienia-doktorski-schowek_43633-7151.jpg', alt: 'Lekarz', caption: 'lekarz' },
+            { id: 'img_policjant', src: 'https://img.freepik.com/darmowe-wektory/policja-stoi-urocza_24908-81641.jpg', alt: 'Policjant', caption: 'policjant' },
+            { id: 'img_fryzjer', src: 'https://img.freepik.com/premium-wektory/rysunek-od-fryzjer_29937-8114.jpg?w=2000', alt: 'Fryzjer', caption: 'fryzjer' }
+        ];
+
+        const imagesColumn = document.getElementById('imagesColumn');
+        const captionsColumn = document.getElementById('captionsColumn');
+        const checkButton = document.getElementById('checkButton');
+        const resetButton = document.getElementById('resetButton');
+        const backButton = document.getElementById('backButton');
+        const nextButton = document.getElementById('nextButton'); 
+        const messageElement = document.getElementById('message');
+
+        let selectedImage = null;
+        let selectedCaption = null;
+        let matchedPairs = 0;
+
+        // Function to shuffle an array (Fisher-Yates algorithm)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Function to initialize the matching game
+        function initializeGame() {
+            imagesColumn.innerHTML = '';
+            captionsColumn.innerHTML = '';
+            messageElement.textContent = '';
+            matchedPairs = 0;
+
+            const shuffledImages = shuffleArray([...pairs]); 
+            const shuffledCaptions = shuffleArray([...pairs]);
+
+            // Create image elements
+            shuffledImages.forEach(item => {
+                const div = document.createElement('div');
+                div.classList.add('image-item');
+                div.dataset.caption = item.caption; 
+                const img = document.createElement('img');
+                img.src = item.src;
+                img.alt = item.alt;
+                // Add onerror to display placeholder image if original image fails to load
+                img.onerror = function() {
+                    this.onerror=null; 
+                    const width = this.width || 130; // Zaktualizowano domyślny rozmiar dla placeholderu
+                    const height = this.height || 130; // Zaktualizowano domyślny rozmiar dla placeholderu
+                    this.src = `https://placehold.co/${width}x${height}/CCCCCC/333333?text=Brak+obrazu`;
+                };
+                div.appendChild(img);
+                div.addEventListener('click', () => selectItem(div, 'image'));
+                imagesColumn.appendChild(div);
+            });
+
+            // Create caption elements
+            shuffledCaptions.forEach(item => {
+                const div = document.createElement('div');
+                div.classList.add('caption-item');
+                div.textContent = item.caption;
+                div.dataset.image = item.caption; 
+                div.addEventListener('click', () => selectItem(div, 'caption'));
+                captionsColumn.appendChild(div);
+            });
+
+            // Reset selections
+            selectedImage = null;
+            selectedCaption = null;
+            updateCheckButtonState();
+        }
+
+        // Function to handle item selection
+        function selectItem(item, type) {
+            // If already matched, do nothing
+            if (item.classList.contains('matched')) {
+                return;
+            }
+
+            if (type === 'image') {
+                if (selectedImage) {
+                    selectedImage.classList.remove('selected');
+                }
+                selectedImage = item;
+                selectedImage.classList.add('selected');
+            } else { // type === 'caption'
+                if (selectedCaption) {
+                    selectedCaption.classList.remove('selected');
+                }
+                selectedCaption = item;
+                selectedCaption.classList.add('selected');
+            }
+            messageElement.textContent = ''; 
+            updateCheckButtonState();
+        }
+
+        // Function to update the state of the check button
+        function updateCheckButtonState() {
+            if (selectedImage && selectedCaption) {
+                checkButton.disabled = false;
+            } else {
+                checkButton.disabled = true;
+            }
+        }
+
+        // Function to check if the selected pair is correct
+        function checkMatch() {
+            if (!selectedImage || !selectedCaption) {
+                messageElement.textContent = 'Proszę wybrać obrazek i podpis!';
+                messageElement.classList.remove('correct-feedback', 'incorrect-feedback');
+                return;
+            }
+
+            const imageCaption = selectedImage.dataset.caption;
+            const captionText = selectedCaption.textContent;
+
+            if (imageCaption === captionText) {
+                messageElement.textContent = 'Poprawne dopasowanie!';
+                messageElement.className = 'correct-feedback';
+
+                selectedImage.classList.remove('selected');
+                selectedCaption.classList.remove('selected');
+
+                selectedImage.classList.add('matched');
+                selectedCaption.classList.add('matched');
+
+                // Clone node and replace to effectively remove all listeners
+                const newImageItem = selectedImage.cloneNode(true);
+                selectedImage.parentNode.replaceChild(newImageItem, selectedImage);
+                const newCaptionItem = selectedCaption.cloneNode(true);
+                selectedCaption.parentNode.replaceChild(newCaptionItem, selectedCaption);
+
+                matchedPairs++;
+                if (matchedPairs === pairs.length) {
+                    messageElement.textContent = 'Wszystkie pary dopasowane! Gratulacje!';
+                    messageElement.classList.add('correct-feedback');
+                    checkButton.disabled = true; 
+                }
+            } else {
+                messageElement.textContent = 'Błędne dopasowanie. Spróbuj ponownie!';
+                messageElement.className = 'incorrect-feedback';
+            }
+
+            // Clear selections after checking
+            selectedImage = null;
+            selectedCaption = null;
+            updateCheckButtonState();
+        }
+
+        // Event listeners
+        checkButton.addEventListener('click', checkMatch);
+        resetButton.addEventListener('click', initializeGame);
+        backButton.addEventListener('click', () => {
+            window.location.href = '6.html'; 
+        });
+        nextButton.addEventListener('click', () => { 
+            window.location.href = '8.html'; 
+        });
+
+        // Initialize the game when the DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', initializeGame);
+    </script>
+</body>
+</html>
