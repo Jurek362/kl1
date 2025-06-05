@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zadanie 4: Rysuj po śladzie</title>
+    <style>
+        /* Stylizacja ogólna body */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Główny kontener quizu */
+        .quiz-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 1.1em;
+        }
+
+        /* Stylizacja canvas */
+        canvas {
+            display: block; /* Usuwa dodatkowy margines pod canvas */
+            background-color: #ffffff;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: crosshair; /* Kursor wskazujący na rysowanie */
+            touch-action: none; /* Zapobiega przewijaniu strony podczas rysowania na dotyku */
+            margin: 0 auto 25px auto; /* Centrowanie i margines dolny */
+        }
+
+        /* Kontener na przyciski */
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap; /* Pozwala przyciskom zawijać się na mniejszych ekranach */
+        }
+
+        /* Stylizacja przycisków */
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Media queries dla responsywności */
+        @media (max-width: 600px) {
+            .quiz-container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+            p {
+                font-size: 1em;
+            }
+            .button-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1>Zadanie 4: Rysuj po śladzie!</h1>
+        <p>Użyj myszy lub palca, aby narysować po szarej pętelce.</p>
+        <canvas id="drawingCanvas"></canvas>
+        <div class="button-container">
+            <button id="resetButton">Resetuj</button>
+            <button id="backButton">Wróć do Zadania 3</button>
+            <button id="nextButton">Dalej</button> <!-- Nowy przycisk "Dalej" -->
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+        const resetButton = document.getElementById('resetButton');
+        const backButton = document.getElementById('backButton');
+        const nextButton = document.getElementById('nextButton'); // Referencja do nowego przycisku "Dalej"
+
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        // Funkcja do rysowania śladu (szarych, symetrycznych pętelek)
+        function drawTrace() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Wyczyść canvas przed rysowaniem śladu
+
+            // Rysuj szare pętelki
+            ctx.strokeStyle = '#cccccc'; // Jasnoszary kolor
+            ctx.lineWidth = 2; // Grubość linii
+            ctx.setLineDash([5, 5]); // Linia przerywana
+            ctx.beginPath();
+
+            const startX = 20;
+            const startY = canvas.height / 2;
+            const loopWidth = 40; // Szerokość jednej pętli
+            const loopHeight = 30; // Wysokość jednej pętli
+            const numLoops = 7; // Liczba pętli
+
+            ctx.moveTo(startX, startY);
+
+            for (let i = 0; i < numLoops; i++) {
+                const currentX = startX + i * loopWidth;
+                // Górna część pętli
+                ctx.bezierCurveTo(
+                    currentX + loopWidth * 0.25, startY - loopHeight,
+                    currentX + loopWidth * 0.75, startY - loopHeight,
+                    currentX + loopWidth, startY
+                );
+                // Dolna część pętli
+                ctx.bezierCurveTo(
+                    currentX + loopWidth * 1.25, startY + loopHeight,
+                    currentX + loopWidth * 1.75, startY + loopHeight,
+                    currentX + loopWidth * 2, startY // Przejście do początku następnej pętli
+                );
+            }
+            
+            ctx.stroke();
+            ctx.setLineDash([]); // Resetuj do pełnej linii
+        }
+
+        // Funkcja do inicjalizacji rozmiaru canvas i rysowania śladu
+        function initializeCanvas() {
+            // Ustaw rozmiar canvas, aby był responsywny
+            canvas.width = Math.min(600, window.innerWidth - 40);
+            canvas.height = Math.min(400, window.innerHeight - 200);
+            drawTrace(); // Rysuj ślad po zmianie rozmiaru
+        }
+
+        // Funkcja do rysowania linii przez użytkownika
+        function draw(e) {
+            if (!isDrawing) return; // Zatrzymaj funkcję, jeśli nie rysujemy
+
+            let clientX, clientY;
+            if (e.touches) { // Obsługa dotyku
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else { // Obsługa myszy
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+
+            // Przeliczanie pozycji myszy/dotyku na współrzędne canvas
+            const rect = canvas.getBoundingClientRect();
+            const x = clientX - rect.left;
+            const y = clientY - rect.top;
+
+            ctx.strokeStyle = '#007bff'; // Kolor rysowania (niebieski)
+            ctx.lineWidth = 4; // Grubość linii
+            ctx.lineCap = 'round'; // Zaokrąglone końcówki linii
+            ctx.lineJoin = 'round'; // Zaokrąglone łączenia linii
+
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+
+            [lastX, lastY] = [x, y]; // Zaktualizuj ostatnie współrzędne
+        }
+
+        // --- Obsługa zdarzeń myszy ---
+        canvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            const rect = canvas.getBoundingClientRect();
+            [lastX, lastY] = [e.clientX - rect.left, e.clientY - rect.top];
+        });
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', () => isDrawing = false);
+        canvas.addEventListener('mouseout', () => isDrawing = false);
+
+        // --- Obsługa zdarzeń dotyku (dla urządzeń mobilnych) ---
+        canvas.addEventListener('touchstart', (e) => {
+            isDrawing = true;
+            // Prevent scrolling when touching the canvas
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            [lastX, lastY] = [e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top];
+        }, { passive: false }); // Użyj { passive: false } aby móc wywołać preventDefault
+
+        canvas.addEventListener('touchmove', (e) => {
+            // Prevent scrolling when drawing
+            e.preventDefault();
+            draw(e);
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', () => isDrawing = false);
+        canvas.addEventListener('touchcancel', () => isDrawing = false); // W przypadku przerwania dotyku
+
+        // Przyciski nawigacyjne
+        resetButton.addEventListener('click', initializeCanvas); // Resetuje canvas
+        backButton.addEventListener('click', () => {
+            window.location.href = '3.html'; // Wróć do zadania 3
+        });
+        nextButton.addEventListener('click', () => { // Nowy słuchacz zdarzeń dla przycisku "Dalej"
+            window.location.href = '5.html'; // Przekierowanie do 5.html
+        });
+
+        // Inicjalizacja canvas przy ładowaniu strony i zmianie rozmiaru okna
+        window.addEventListener('load', initializeCanvas);
+        window.addEventListener('resize', initializeCanvas);
+    </script>
+</body>
+</html>
