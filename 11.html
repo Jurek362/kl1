@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zadanie 11: Działania Matematyczne</title>
+    <style>
+        /* General body styling */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Main container for the quiz */
+        .quiz-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+        }
+
+        /* Question display */
+        .math-question {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 30px;
+        }
+
+        /* Input field for answer */
+        input[type="number"] {
+            padding: 10px 15px;
+            font-size: 1.5em;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            text-align: center;
+            width: 120px;
+            margin-bottom: 25px;
+        }
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+        /* Feedback messages */
+        #message {
+            margin-top: 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #555;
+        }
+        .correct-feedback {
+            color: green;
+        }
+        .incorrect-feedback {
+            color: red;
+        }
+
+        /* Button container styling */
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        /* Button styling */
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Media queries for responsiveness */
+        @media (max-width: 480px) {
+            .quiz-container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+            .math-question {
+                font-size: 2em;
+            }
+            input[type="number"] {
+                width: 100px;
+                font-size: 1.2em;
+            }
+            .button-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1>Zadanie 11: Rozwiąż działania matematyczne</h1>
+        <div class="math-question" id="mathQuestion"></div>
+        <input type="number" id="answerInput" placeholder="Wpisz odpowiedź">
+        <div class="button-container">
+            <button id="checkButton">Sprawdź</button>
+            <button id="resetButton">Resetuj bieżące</button>
+            <button id="backButton">Wróć do Zadania 10</button>
+            <button id="nextQuestionButton" style="display: none;">Następne działanie</button>
+            <button id="nextTaskButton" style="display: none;">Dalej do Zadania 12</button>
+        </div>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                problem: "2 + 1 = ?",
+                answer: 3
+            },
+            {
+                problem: "5 - 2 = ?",
+                answer: 3
+            }
+        ];
+
+        const mathQuestionElement = document.getElementById('mathQuestion');
+        const answerInput = document.getElementById('answerInput');
+        const checkButton = document.getElementById('checkButton');
+        const resetButton = document.getElementById('resetButton');
+        const backButton = document.getElementById('backButton');
+        const nextQuestionButton = document.getElementById('nextQuestionButton');
+        const nextTaskButton = document.getElementById('nextTaskButton'); // New button for next task
+        const messageElement = document.getElementById('message');
+
+        let currentQuestionIndex = 0;
+
+        // Function to load a math problem
+        function loadQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                // All questions answered
+                mathQuestionElement.textContent = "Gratulacje! Ukończyłeś wszystkie działania!";
+                answerInput.style.display = 'none';
+                checkButton.style.display = 'none';
+                resetButton.style.display = 'none';
+                nextQuestionButton.style.display = 'none';
+                nextTaskButton.style.display = 'inline-block'; // Show "Dalej do Zadania 12" button
+                messageElement.textContent = '';
+                return;
+            }
+
+            const currentQuestion = questions[currentQuestionIndex];
+            mathQuestionElement.textContent = currentQuestion.problem;
+            answerInput.value = ''; // Clear previous input
+            answerInput.disabled = false; // Enable input
+            checkButton.disabled = false; // Enable check button
+            messageElement.textContent = ''; // Clear messages
+
+            nextQuestionButton.style.display = 'none'; // Hide next button
+            nextTaskButton.style.display = 'none'; // Hide next task button
+        }
+
+        // Function to check the answer
+        function checkAnswer() {
+            const userAnswer = parseInt(answerInput.value, 10);
+            const currentQuestion = questions[currentQuestionIndex];
+
+            if (isNaN(userAnswer)) {
+                messageElement.textContent = 'Proszę wpisać liczbę!';
+                messageElement.className = 'incorrect-feedback';
+                return;
+            }
+
+            if (userAnswer === currentQuestion.answer) {
+                messageElement.textContent = 'Prawidłowa odpowiedź! Brawo!';
+                messageElement.className = 'correct-feedback';
+                checkButton.disabled = true; // Disable check button
+                answerInput.disabled = true; // Disable input
+
+                currentQuestionIndex++; // Move to next question index
+
+                if (currentQuestionIndex < questions.length) {
+                    nextQuestionButton.style.display = 'inline-block'; // Show next question button
+                } else {
+                    nextTaskButton.style.display = 'inline-block'; // Show "Dalej do Zadania 12" button
+                }
+            } else {
+                messageElement.textContent = 'Błędna odpowiedź. Spróbuj ponownie.';
+                messageElement.className = 'incorrect-feedback';
+                // Keep input and check button enabled for retry
+                answerInput.disabled = false;
+                checkButton.disabled = false;
+            }
+        }
+
+        // Event Listeners
+        checkButton.addEventListener('click', checkAnswer);
+        resetButton.addEventListener('click', loadQuestion); // Reset current question
+        backButton.addEventListener('click', () => {
+            window.location.href = '10.html'; // Go back to Zadanie 10
+        });
+        nextQuestionButton.addEventListener('click', loadQuestion); // Load next question
+        nextTaskButton.addEventListener('click', () => { // Event listener for the new "Dalej do Zadania 12" button
+            alert('Przechodzisz do Zadania 12!');
+            window.location.href = '12.html'; // Redirect to 12.html
+        });
+
+        // Initialize the first question on page load
+        document.addEventListener('DOMContentLoaded', loadQuestion);
+    </script>
+</body>
+</html>
