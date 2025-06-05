@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zadanie 2: Połącz obrazek z podpisem</title>
+    <title>Zadanie 3: Przeczytaj wyraz i wskaż odpowiedni obrazek</title>
     <style>
         /* General body styling */
         body {
@@ -26,7 +26,7 @@
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             width: 100%;
-            max-width: 800px;
+            max-width: 700px; /* Slightly wider for three images */
             text-align: center;
             box-sizing: border-box;
         }
@@ -37,71 +37,71 @@
             font-size: 1.8em;
         }
 
-        /* Container for matching sections */
-        .matching-sections {
+        /* Styling for the word to be guessed */
+        .word-display {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+        }
+
+        /* Container for images */
+        .image-selection {
             display: flex;
-            flex-direction: column; /* Default to column for small screens */
+            flex-wrap: wrap; /* Allow images to wrap */
+            justify-content: center;
             gap: 20px;
-            justify-content: space-around;
             margin-bottom: 25px;
         }
 
-        /* Image and caption columns */
-        .images-column, .captions-column {
-            flex: 1;
+        /* Styling for individual image items */
+        .image-item {
             display: flex;
             flex-direction: column;
-            gap: 15px;
             align-items: center;
-        }
-
-        /* Image styling */
-        .image-item img {
-            width: 120px;
-            height: 120px;
-            object-fit: cover;
-            border-radius: 8px;
-            border: 2px solid transparent;
             cursor: pointer;
-            transition: border-color 0.2s, transform 0.2s;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            padding: 10px;
+            transition: border-color 0.2s, transform 0.2s, background-color 0.2s;
         }
 
-        .image-item img:hover {
+        .image-item:hover {
+            background-color: #e9e9e9;
             transform: scale(1.03);
         }
 
-        /* Caption styling */
-        .caption-item {
-            padding: 10px 15px;
-            background-color: #e0e0e0;
-            border-radius: 5px;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
-            min-width: 100px; /* Ensure captions have a minimum width */
-            text-align: center;
+        .image-item img {
+            width: 150px; /* Larger images */
+            height: 150px;
+            object-fit: contain; /* Ensure full image is visible */
+            border-radius: 6px;
+            pointer-events: none; /* Prevent img itself from being target of click */
         }
 
-        .caption-item:hover {
-            background-color: #d0d0d0;
-            transform: scale(1.02);
-        }
-
-        /* Selected state for images and captions */
-        .image-item.selected img, .caption-item.selected {
+        /* Selected state for images */
+        .image-item.selected {
             border-color: #007bff;
             box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
+            background-color: #e0eaff;
         }
 
-        /* Matched state for images and captions */
-        .image-item.matched img, .caption-item.matched {
+        /* Correct/Incorrect feedback states */
+        .image-item.correct {
             border-color: green;
-            opacity: 0.7;
-            cursor: default;
+            background-color: #e6ffe6;
         }
-        .image-item.matched img:hover, .caption-item.matched:hover {
-             transform: none; /* No hover effect after matched */
-             background-color: #e0e0e0; /* Reset hover background for matched captions */
+        .image-item.incorrect {
+            border-color: red;
+            background-color: #ffe6e6;
+        }
+        .image-item.correct, .image-item.incorrect {
+            cursor: default;
+            pointer-events: none; /* Disable further clicks after feedback */
+        }
+        .image-item.correct:hover, .image-item.incorrect:hover {
+            transform: none;
         }
 
 
@@ -125,7 +125,7 @@
             justify-content: center;
             gap: 15px;
             margin-top: 25px;
-            flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+            flex-wrap: wrap;
         }
 
         /* Button styling */
@@ -144,31 +144,23 @@
         button:hover {
             background-color: #0056b3;
         }
-
-        /* Media queries for responsiveness */
-        @media (min-width: 600px) {
-            .matching-sections {
-                flex-direction: row; /* Change to row for wider screens */
-            }
-            .images-column, .captions-column {
-                flex-direction: column; /* Keep column for items within columns */
-            }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            box-shadow: none;
         }
 
-        @media (max-width: 480px) {
-            .quiz-container {
-                padding: 20px;
-            }
+        /* Media queries for responsiveness */
+        @media (max-width: 600px) {
             h1 {
                 font-size: 1.5em;
             }
-            .image-item img {
-                width: 100px;
-                height: 100px;
+            .word-display {
+                font-size: 2em;
             }
-            .caption-item {
-                padding: 8px 12px;
-                font-size: 0.9em;
+            .image-item img {
+                width: 120px;
+                height: 120px;
             }
             .button-container {
                 flex-direction: column;
@@ -179,44 +171,38 @@
 </head>
 <body>
     <div class="quiz-container">
-        <h1>Zadanie 2: Połącz obrazek z odpowiednim podpisem</h1>
-        <div class="matching-sections">
-            <div class="images-column" id="imagesColumn">
-                <!-- Obrazki zostaną dodane przez JavaScript -->
-            </div>
-            <div class="captions-column" id="captionsColumn">
-                <!-- Podpisy zostaną dodane przez JavaScript -->
-            </div>
+        <h1>Zadanie 3: Przeczytaj wyraz i wskaż odpowiedni obrazek</h1>
+        <div class="word-display" id="wordDisplay"></div>
+        <div class="image-selection" id="imageSelection">
+            <!-- Obrazki zostaną dodane przez JavaScript -->
         </div>
         <div class="button-container">
-            <button id="checkButton">Sprawdź dopasowania</button>
+            <button id="checkButton" disabled>Sprawdź odpowiedź</button>
             <button id="resetButton">Resetuj</button>
-            <button id="backButton">Wróć do Zadania 1</button>
-            <button id="nextButton">Dalej</button> <!-- Nowy przycisk "Dalej" -->
+            <button id="backButton">Wróć do Zadania 2</button>
+            <button id="nextButton">Dalej</button>
         </div>
         <div id="message"></div>
     </div>
 
     <script>
-        // Array of image-caption pairs with provided image URLs
-        const pairs = [
-            { id: 'img1', type: 'image', src: 'https://i.postimg.cc/8CwPz9Ms/Zrzut-ekranu-2025-06-05-104043.png', alt: 'Pies', caption: 'pies' },
-            { id: 'img2', type: 'image', src: 'https://cdn.pixabay.com/photo/2023/03/06/09/11/house-7833067_1280.png', alt: 'Dom', caption: 'dom' },
-            { id: 'img3', type: 'image', src: 'https://www.pngarts.com/files/4/Sun-PNG-Image.png', alt: 'Słońce', caption: 'słońce' },
-            { id: 'img4', type: 'image', src: 'https://static.vecteezy.com/system/resources/previews/022/917/520/original/mother-and-daughter-cartoon-png.png', alt: 'Mama', caption: 'mama' }
+        // Define the word to guess and available image options
+        const wordToGuess = "KOT"; // The word the user needs to match
+        const images = [
+            { id: 'img_kot', src: 'https://www.weekendowo.pl/files/thumbs/movies/a14855645a1b12415dca772c54965162.5033b600a17cdabd3c1a90f0d9479e54.jpg', alt: 'Kot', correct: true },
+            { id: 'img_pies', src: 'https://i.postimg.cc/8CwPz9Ms/Zrzut-ekranu-2025-06-05-104043.png', alt: 'Pies', correct: false },
+            { id: 'img_kura', src: 'https://static.vecteezy.com/system/resources/previews/002/735/578/non_2x/brown-hen-chicken-from-a-splash-of-watercolor-colored-drawing-realistic-illustration-of-paints-vector.jpg', alt: 'Kura', correct: false }
         ];
 
-        const imagesColumn = document.getElementById('imagesColumn');
-        const captionsColumn = document.getElementById('captionsColumn');
+        const wordDisplay = document.getElementById('wordDisplay');
+        const imageSelection = document.getElementById('imageSelection');
         const checkButton = document.getElementById('checkButton');
         const resetButton = document.getElementById('resetButton');
         const backButton = document.getElementById('backButton');
         const nextButton = document.getElementById('nextButton'); // Nowy przycisk "Dalej"
         const messageElement = document.getElementById('message');
 
-        let selectedImage = null;
-        let selectedCaption = null;
-        let matchedPairs = 0;
+        let selectedImageItem = null; // Stores the currently selected image div
 
         // Function to shuffle an array (Fisher-Yates algorithm)
         function shuffleArray(array) {
@@ -227,143 +213,98 @@
             return array;
         }
 
-        // Function to initialize the matching game
+        // Function to initialize the game
         function initializeGame() {
-            imagesColumn.innerHTML = '';
-            captionsColumn.innerHTML = '';
-            messageElement.textContent = '';
-            matchedPairs = 0;
+            wordDisplay.textContent = wordToGuess; // Display the word
+            imageSelection.innerHTML = ''; // Clear previous images
+            messageElement.textContent = ''; // Clear previous messages
+            selectedImageItem = null;
+            checkButton.disabled = true; // Disable check button initially
 
-            const shuffledImages = shuffleArray([...pairs]); // Shallow copy to shuffle independently
-            const shuffledCaptions = shuffleArray([...pairs]);
+            const shuffledImages = shuffleArray([...images]); // Shuffle image order
 
-            // Create image elements
-            shuffledImages.forEach(item => {
+            shuffledImages.forEach(imgData => {
                 const div = document.createElement('div');
                 div.classList.add('image-item');
-                div.dataset.caption = item.caption; // Store the correct caption as a data attribute
+                div.dataset.id = imgData.id; // Store image ID
+                div.dataset.correct = imgData.correct; // Store whether this is the correct image
+
                 const img = document.createElement('img');
-                img.src = item.src;
-                img.alt = item.alt;
-                // Add onerror to display placeholder image if original image fails to load
+                img.src = imgData.src;
+                img.alt = imgData.alt;
                 img.onerror = function() {
                     this.onerror=null; // Prevent infinite loop if placeholder fails
-                    const width = this.width || 120; // Use current width or default
-                    const height = this.height || 120; // Use current height or default
+                    const width = this.width || 150;
+                    const height = this.height || 150;
                     this.src = `https://placehold.co/${width}x${height}/CCCCCC/333333?text=Brak+obrazu`;
                 };
                 div.appendChild(img);
-                div.addEventListener('click', () => selectItem(div, 'image'));
-                imagesColumn.appendChild(div);
+
+                div.addEventListener('click', () => selectImage(div));
+                imageSelection.appendChild(div);
             });
-
-            // Create caption elements
-            shuffledCaptions.forEach(item => {
-                const div = document.createElement('div');
-                div.classList.add('caption-item');
-                div.textContent = item.caption;
-                div.dataset.image = item.caption; // Store the associated image alt as a data attribute
-                div.addEventListener('click', () => selectItem(div, 'caption'));
-                captionsColumn.appendChild(div);
-            });
-
-            // Reset selections
-            selectedImage = null;
-            selectedCaption = null;
-            updateCheckButtonState();
         }
 
-        // Function to handle item selection
-        function selectItem(item, type) {
-            // If already matched, do nothing
-            if (item.classList.contains('matched')) {
-                return;
+        // Function to handle image selection
+        function selectImage(imageItem) {
+            // Remove 'selected' class from previously selected item
+            if (selectedImageItem && selectedImageItem !== imageItem) {
+                selectedImageItem.classList.remove('selected');
             }
-
-            if (type === 'image') {
-                if (selectedImage) {
-                    selectedImage.classList.remove('selected');
-                }
-                selectedImage = item;
-                selectedImage.classList.add('selected');
-            } else { // type === 'caption'
-                if (selectedCaption) {
-                    selectedCaption.classList.remove('selected');
-                }
-                selectedCaption = item;
-                selectedCaption.classList.add('selected');
-            }
-            messageElement.textContent = ''; // Clear previous messages
-            updateCheckButtonState();
+            // Toggle 'selected' class on the clicked item
+            imageItem.classList.toggle('selected');
+            selectedImageItem = imageItem.classList.contains('selected') ? imageItem : null;
+            
+            messageElement.textContent = ''; // Clear feedback
+            checkButton.disabled = !selectedImageItem; // Enable/disable check button
         }
 
-        // Function to update the state of the check button
-        function updateCheckButtonState() {
-            if (selectedImage && selectedCaption) {
-                checkButton.disabled = false;
-            } else {
-                checkButton.disabled = true;
-            }
-        }
-
-        // Function to check if the selected pair is correct
-        function checkMatch() {
-            if (!selectedImage || !selectedCaption) {
-                messageElement.textContent = 'Proszę wybrać obrazek i podpis!';
-                messageElement.classList.remove('correct-feedback', 'incorrect-feedback');
-                return;
-            }
-
-            const imageCaption = selectedImage.dataset.caption;
-            const captionText = selectedCaption.textContent;
-
-            if (imageCaption === captionText) {
-                messageElement.textContent = 'Poprawne dopasowanie!';
-                messageElement.className = 'correct-feedback';
-
-                selectedImage.classList.remove('selected');
-                selectedCaption.classList.remove('selected');
-
-                selectedImage.classList.add('matched');
-                selectedCaption.classList.add('matched');
-
-                // Remove event listeners for matched items to prevent further interaction
-                // Clone node and replace to effectively remove all listeners
-                const newImageItem = selectedImage.cloneNode(true);
-                selectedImage.parentNode.replaceChild(newImageItem, selectedImage);
-                const newCaptionItem = selectedCaption.cloneNode(true);
-                selectedCaption.parentNode.replaceChild(newCaptionItem, selectedCaption);
-
-
-                matchedPairs++;
-                if (matchedPairs === pairs.length) {
-                    messageElement.textContent = 'Wszystkie pary dopasowane! Gratulacje!';
-                    messageElement.classList.add('correct-feedback');
-                    checkButton.disabled = true; // Disable check button after all matched
-                }
-            } else {
-                messageElement.textContent = 'Błędne dopasowanie. Spróbuj ponownie!';
+        // Function to check the selected answer
+        function checkAnswer() {
+            if (!selectedImageItem) {
+                messageElement.textContent = 'Proszę wybrać obrazek!';
                 messageElement.className = 'incorrect-feedback';
+                return;
             }
 
-            // Clear selections after checking
-            selectedImage = null;
-            selectedCaption = null;
-            updateCheckButtonState();
+            const isCorrect = selectedImageItem.dataset.correct === 'true';
+
+            if (isCorrect) {
+                messageElement.textContent = 'Poprawna odpowiedź!';
+                messageElement.className = 'correct-feedback';
+                selectedImageItem.classList.add('correct');
+            } else {
+                messageElement.textContent = 'Błędna odpowiedź. Spróbuj ponownie!';
+                messageElement.className = 'incorrect-feedback';
+                selectedImageItem.classList.add('incorrect');
+                // Removed the code that highlights the correct answer after an incorrect guess
+            }
+
+            // Disable all image items and the check button after an answer is given
+            document.querySelectorAll('.image-item').forEach(item => {
+                // To properly remove listeners and prevent further clicks, we replace the node
+                const newItem = item.cloneNode(true);
+                item.parentNode.replaceChild(newItem, item);
+                // After replacing, if it was the selected item, update the reference
+                if (item === selectedImageItem) {
+                    selectedImageItem = newItem;
+                }
+            });
+            checkButton.disabled = true;
         }
 
         // Event listeners
-        checkButton.addEventListener('click', checkMatch);
+        checkButton.addEventListener('click', checkAnswer);
         resetButton.addEventListener('click', initializeGame);
         backButton.addEventListener('click', () => {
-            window.location.href = 'index.html'; // Assuming the first task is index.html
+            window.location.href = '2.html'; // Go back to Zadanie 2
         });
         // Event listener for the new "Dalej" button
         nextButton.addEventListener('click', () => {
-            window.location.href = '3.html'; // Redirect to 3.html
+            window.location.href = '4.html'; // Redirect to 4.html
         });
 
-        // Initialize the game when the DOM is fully loaded
+        // Initialize the game on page load
         document.addEventListener('DOMContentLoaded', initializeGame);
     </script>
 </body>
