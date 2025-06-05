@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zadanie 5: Co można robić w lesie?</title>
+    <style>
+        /* General body styling */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Main container for the quiz */
+        .quiz-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+        }
+
+        /* Container for options */
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+            align-items: center;
+        }
+
+        /* Styling for individual option items */
+        .option-item {
+            background-color: #e0e0e0;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: background-color 0.2s, border-color 0.2s;
+            width: 80%; /* Adjust width for options */
+            text-align: left; /* Align text to the left */
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .option-item:hover {
+            background-color: #d0d0d0;
+        }
+
+        /* Checkbox styling */
+        .option-item input[type="checkbox"] {
+            transform: scale(1.3); /* Make checkbox larger */
+            cursor: pointer;
+        }
+
+        /* Feedback states */
+        .option-item.correct-answer {
+            background-color: #e6ffe6; /* Light green */
+            border-color: green;
+        }
+
+        .option-item.incorrect-answer {
+            background-color: #ffe6e6; /* Light red */
+            border-color: red;
+        }
+
+        /* Disable clicks after checking */
+        .option-item.disabled {
+            pointer-events: none;
+            cursor: default;
+            opacity: 0.8;
+        }
+
+        /* Feedback messages */
+        #message {
+            margin-top: 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #555;
+        }
+        .correct-feedback {
+            color: green;
+        }
+        .incorrect-feedback {
+            color: red;
+        }
+
+        /* Button container styling */
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        /* Button styling */
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Media queries for responsiveness */
+        @media (max-width: 600px) {
+            .quiz-container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+            .option-item {
+                width: 95%; /* Make options wider on small screens */
+                padding: 10px 15px;
+            }
+            .button-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1>Zadanie 5: Zaznacz, co można robić w lesie:</h1>
+        <div class="options-container" id="optionsContainer">
+            </div>
+        <div class="button-container">
+            <button id="checkButton">Sprawdź</button>
+            <button id="resetButton">Resetuj</button>
+            <button id="backButton">Wróć do Zadania 4</button>
+            <button id="nextButton">Dalej</button> <!-- Nowy przycisk "Dalej" -->
+            <button id="finishButton">Zakończ test</button>
+        </div>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        const optionsData = [
+            { text: "zbierać grzyby", correct: true },
+            { text: "hałasować", correct: false },
+            { text: "palić ognisko", correct: false },
+            { text: "spacerować", correct: true }
+        ];
+
+        const optionsContainer = document.getElementById('optionsContainer');
+        const checkButton = document.getElementById('checkButton');
+        const resetButton = document.getElementById('resetButton');
+        const backButton = document.getElementById('backButton');
+        const nextButton = document.getElementById('nextButton'); // Referencja do nowego przycisku "Dalej"
+        const finishButton = document.getElementById('finishButton');
+        const messageElement = document.getElementById('message');
+
+        let selectedOptions = new Set(); // Stores text of selected options
+
+        // Function to initialize/reset the game
+        function initializeGame() {
+            optionsContainer.innerHTML = '';
+            messageElement.textContent = '';
+            selectedOptions.clear();
+            checkButton.disabled = false; // Enable check button on reset
+
+            optionsData.forEach(option => {
+                const optionDiv = document.createElement('div');
+                optionDiv.classList.add('option-item');
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `option-${option.text.replace(/\s/g, '-')}`; // Unique ID for checkbox
+                checkbox.value = option.text;
+                checkbox.checked = false;
+
+                const label = document.createElement('label');
+                label.htmlFor = checkbox.id;
+                label.textContent = option.text;
+
+                optionDiv.appendChild(checkbox);
+                optionDiv.appendChild(label);
+
+                // Add event listener for clicking the div (to toggle checkbox)
+                optionDiv.addEventListener('click', () => {
+                    if (!optionDiv.classList.contains('disabled')) { // Only toggle if not disabled
+                        checkbox.checked = !checkbox.checked;
+                        updateSelection(option.text, checkbox.checked);
+                    }
+                });
+
+                // Add event listener for checkbox itself to ensure consistency
+                checkbox.addEventListener('change', (e) => {
+                    updateSelection(option.text, e.target.checked);
+                });
+
+                optionsContainer.appendChild(optionDiv);
+            });
+        }
+
+        // Function to update the set of selected options
+        function updateSelection(optionText, isChecked) {
+            if (isChecked) {
+                selectedOptions.add(optionText);
+            } else {
+                selectedOptions.delete(optionText);
+            }
+        }
+
+        // Function to check answers
+        function checkAnswers() {
+            let allCorrect = true;
+            let correctCount = 0;
+            let totalCorrectAnswers = optionsData.filter(o => o.correct).length;
+
+            optionsData.forEach(option => {
+                const optionDiv = optionsContainer.querySelector(`[value="${option.text}"]`).closest('.option-item');
+                optionDiv.classList.add('disabled'); // Disable after check
+
+                const isSelected = selectedOptions.has(option.text);
+
+                if (option.correct) {
+                    if (isSelected) {
+                        optionDiv.classList.add('correct-answer');
+                        correctCount++;
+                    } else {
+                        optionDiv.classList.add('incorrect-answer'); // Missed correct answer
+                        allCorrect = false;
+                    }
+                } else { // Incorrect option
+                    if (isSelected) {
+                        optionDiv.classList.add('incorrect-answer'); // Selected forbidden action
+                        allCorrect = false;
+                    }
+                    // If incorrect and not selected, do nothing (no special styling needed)
+                }
+            });
+
+            if (allCorrect && correctCount === totalCorrectAnswers) {
+                messageElement.textContent = 'Brawo! Wszystkie odpowiedzi są poprawne!';
+                messageElement.className = 'correct-feedback';
+            } else {
+                messageElement.textContent = 'Niektóre odpowiedzi są błędne. Spróbuj ponownie.';
+                messageElement.className = 'incorrect-feedback';
+            }
+            checkButton.disabled = true; // Disable check button after review
+        }
+
+        // Event listeners
+        checkButton.addEventListener('click', checkAnswers);
+        resetButton.addEventListener('click', initializeGame);
+        backButton.addEventListener('click', () => {
+            window.location.href = '4.html'; // Go back to Zadanie 4
+        });
+        nextButton.addEventListener('click', () => { // Nowy słuchacz zdarzeń dla przycisku "Dalej"
+            window.location.href = '6.html'; // Przekierowanie do 6.html
+        });
+        finishButton.addEventListener('click', () => {
+            alert('Gratulacje! Test zakończony!');
+            // Możesz przekierować na stronę podsumowania, np.:
+            // window.location.href = 'koniec_testu.html';
+        });
+
+        // Initialize the game on page load
+        document.addEventListener('DOMContentLoaded', initializeGame);
+    </script>
+</body>
+</html>
