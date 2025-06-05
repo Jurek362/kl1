@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zadanie 8: Policz i wpisz</title>
+    <style>
+        /* General body styling */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Main container for the quiz */
+        .quiz-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+        }
+
+        /* Question display */
+        .question-text {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Container for counting items (emojis/images) */
+        .items-display {
+            font-size: 3em; /* Larger for emojis */
+            margin-bottom: 25px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        /* Input field for answer */
+        input[type="number"] {
+            padding: 10px 15px;
+            font-size: 1.2em;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            text-align: center;
+            width: 100px;
+            margin-bottom: 25px;
+        }
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+        /* Feedback messages */
+        #message {
+            margin-top: 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #555;
+        }
+        .correct-feedback {
+            color: green;
+        }
+        .incorrect-feedback {
+            color: red;
+        }
+
+        /* Button container styling */
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        /* Button styling */
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Media queries for responsiveness */
+        @media (max-width: 480px) {
+            .quiz-container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+            .question-text {
+                font-size: 1.2em;
+            }
+            .items-display {
+                font-size: 2.5em;
+                gap: 10px;
+            }
+            input[type="number"] {
+                width: 80px;
+                font-size: 1em;
+            }
+            .button-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1>Zadanie 8: Policz i wpisz!</h1>
+        <div class="question-text" id="questionText"></div>
+        <div class="items-display" id="itemsDisplay"></div>
+        <input type="number" id="answerInput" placeholder="Wpisz liczbę">
+        <div class="button-container">
+            <button id="checkButton">Sprawdź</button>
+            <button id="resetButton">Resetuj zadanie</button>
+            <button id="backButton">Wróć do Zadania 7</button>
+            <button id="nextToZadanie9Button" style="display: none;">Dalej do Zadania 9</button>
+        </div>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "Ile jest jabłek?",
+                items: Array(3).fill('🍎'), // 3 apple emojis
+                answer: 3
+            },
+            {
+                question: "Ile jest kotków?",
+                items: Array(5).fill('🐱'), // 5 cat emojis
+                answer: 5
+            }
+        ];
+
+        const questionTextElement = document.getElementById('questionText');
+        const itemsDisplayElement = document.getElementById('itemsDisplay');
+        const answerInput = document.getElementById('answerInput');
+        const checkButton = document.getElementById('checkButton');
+        const resetButton = document.getElementById('resetButton');
+        const backButton = document.getElementById('backButton');
+        const nextToZadanie9Button = document.getElementById('nextToZadanie9Button'); // Zmieniono nazwę na docelowy przycisk "Dalej"
+        const messageElement = document.getElementById('message');
+
+        let currentQuestionIndex = 0;
+        let correctlyAnsweredQuestionsCount = 0; // Licznik poprawnie ukończonych pytań
+
+        // Function to load a question
+        function loadQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                // Wszystkie pytania zostały już odpowiedzone
+                questionTextElement.textContent = "Gratulacje! Ukończyłeś wszystkie zadania!";
+                itemsDisplayElement.innerHTML = '';
+                answerInput.style.display = 'none'; // Ukryj pole input
+                checkButton.style.display = 'none'; // Ukryj przycisk sprawdź
+                messageElement.textContent = '';
+                nextToZadanie9Button.style.display = 'inline-block'; // Pokaż przycisk "Dalej do Zadania 9"
+                resetButton.style.display = 'none'; // Ukryj przycisk resetowania bieżącego pytania
+                return;
+            }
+
+            const currentQuestion = questions[currentQuestionIndex];
+            questionTextElement.textContent = currentQuestion.question;
+            itemsDisplayElement.innerHTML = currentQuestion.items.join(''); // Display items/emojis
+
+            answerInput.value = ''; // Clear previous input
+            answerInput.disabled = false; // Enable input
+            checkButton.disabled = false; // Enable check button
+            
+            messageElement.textContent = ''; // Clear messages
+
+            nextToZadanie9Button.style.display = 'none'; // Ukryj przycisk "Dalej do Zadania 9"
+            answerInput.style.display = 'inline-block'; // Upewnij się, że pole input jest widoczne
+            checkButton.style.display = 'inline-block'; // Upewnij się, że przycisk sprawdź jest widocz
+            resetButton.style.display = 'inline-block'; // Upewnij się, że przycisk reset jest widoczny
+        }
+
+        // Function to check the answer
+        function checkAnswer() {
+            const userAnswer = parseInt(answerInput.value, 10);
+            const currentQuestion = questions[currentQuestionIndex];
+
+            if (isNaN(userAnswer)) {
+                messageElement.textContent = 'Proszę wpisać liczbę!';
+                messageElement.className = 'incorrect-feedback';
+                return;
+            }
+
+            if (userAnswer === currentQuestion.answer) {
+                messageElement.textContent = 'Prawidłowa odpowiedź! Brawo!';
+                messageElement.className = 'correct-feedback';
+                checkButton.disabled = true; // Disable check button
+                answerInput.disabled = true; // Disable input
+                
+                correctlyAnsweredQuestionsCount++; // Zwiększ licznik poprawnie odpowiedzonych pytań
+                currentQuestionIndex++; // Przejdź do następnego pytania
+
+                if (currentQuestionIndex < questions.length) {
+                    // Jeśli są jeszcze pytania, załaduj następne
+                    setTimeout(loadQuestion, 1000); // Załaduj następne pytanie po krótkiej chwili
+                } else {
+                    // Wszystkie pytania zostały poprawnie odpowiedzione
+                    questionTextElement.textContent = "Gratulacje! Ukończyłeś wszystkie zadania!";
+                    itemsDisplayElement.innerHTML = '';
+                    answerInput.style.display = 'none';
+                    checkButton.style.display = 'none';
+                    messageElement.textContent = ''; // Wyczyść wiadomość o ostatniej odpowiedzi
+                    nextToZadanie9Button.style.display = 'inline-block'; // Pokaż przycisk "Dalej do Zadania 9"
+                    resetButton.style.display = 'none'; // Ukryj przycisk resetowania bieżącego pytania
+                }
+            } else {
+                messageElement.textContent = 'Błędna odpowiedź. Spróbuj ponownie.';
+                messageElement.className = 'incorrect-feedback';
+                // Zachowaj pole input i przycisk sprawdzenia aktywne, aby umożliwić ponowną próbę
+                answerInput.disabled = false; 
+                checkButton.disabled = false;
+            }
+        }
+
+        // Function to reset the entire task
+        function resetTask() {
+            currentQuestionIndex = 0;
+            correctlyAnsweredQuestionsCount = 0;
+            answerInput.style.display = 'inline-block'; // Upewnij się, że pole input jest widoczne
+            checkButton.style.display = 'inline-block'; // Upewnij się, że przycisk sprawdź jest widoczny
+            resetButton.style.display = 'inline-block'; // Upewnij się, że przycisk reset jest widoczny
+            loadQuestion();
+        }
+
+        // Event Listeners
+        checkButton.addEventListener('click', checkAnswer);
+        resetButton.addEventListener('click', resetTask); // Przycisk "Resetuj zadanie" resetuje cały zestaw pytań
+        backButton.addEventListener('click', () => {
+            window.location.href = '7.html'; // Go back to Zadanie 7
+        });
+        nextToZadanie9Button.addEventListener('click', () => {
+            alert('Przechodzisz do Zadania 9! (Plik 9.html)');
+            window.location.href = '9.html'; // Przekierowanie do 9.html
+        });
+
+        // Initialize the first question on page load
+        document.addEventListener('DOMContentLoaded', loadQuestion);
+    </script>
+</body>
+</html>
