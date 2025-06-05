@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Podkreśl swoje imię</title>
+    <style>
+        /* Stylizacja ogólna body */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+            flex-direction: column;
+            padding: 20px; /* Dodatkowy padding dla responsywności */
+        }
+        /* Stylizacja kontenera głównego */
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 100%; /* Ustawienie szerokości na 100% dla lepszej responsywności */
+            max-width: 600px; /* Maksymalna szerokość kontenera */
+            box-sizing: border-box; /* Uwzględnienie paddingu w szerokości */
+        }
+        /* Stylizacja nagłówka */
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em; /* Zmniejszenie czcionki dla małych ekranów */
+        }
+        /* Stylizacja kontenera liter */
+        .letters {
+            font-size: 2em;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap; /* Zawijanie liter na mniejszych ekranach */
+            gap: 15px; /* Odstęp między literami */
+        }
+        /* Stylizacja pojedynczej litery */
+        .letter {
+            cursor: pointer;
+            padding: 5px 8px;
+            border: 1px solid transparent; /* Przezroczysta ramka, żeby nie "skakały" elementy */
+            border-radius: 4px;
+            transition: background-color 0.2s, border-color 0.2s;
+            user-select: none; /* Zapobiega zaznaczaniu tekstu */
+        }
+        .letter:hover {
+            background-color: #e9e9e9;
+        }
+        /* Stylizacja podkreślonej litery */
+        .letter.underlined {
+            text-decoration: underline;
+            font-weight: bold;
+            color: #007bff;
+        }
+        /* Stylizacja kontenera przycisków */
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px; /* Odstęp między przyciskami */
+            margin-top: 20px;
+        }
+        /* Stylizacja przycisku */
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Delikatny cień dla przycisku */
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        /* Stylizacja wiadomości */
+        #message {
+            margin-top: 20px;
+            font-size: 1.1em;
+            color: #555;
+        }
+
+        /* Media queries dla responsywności */
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.2em;
+            }
+            .letters {
+                font-size: 1.5em;
+                gap: 10px;
+            }
+            .letter {
+                padding: 3px 6px;
+            }
+            .button-container {
+                flex-direction: column; /* Ułóż przyciski w kolumnie na małych ekranach */
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Podkreśl litery, które tworzą Twoje imię:</h1>
+        <div class="letters" id="letterContainer">
+            <!-- Litery zostaną dodane przez JavaScript -->
+        </div>
+        <div class="button-container">
+            <button id="resetButton">Resetuj</button>
+            <button id="nextButton">Dalej</button>
+        </div>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        // Wszystkie dostępne litery do wyboru
+        const allLetters = ['A', 'M', 'K', 'T', 'O', 'P', 'V', 'L', 'D', 'S', 'I', 'R', 'N', 'U', 'C', 'B'];
+        const letterContainer = document.getElementById('letterContainer');
+        const resetButton = document.getElementById('resetButton');
+        const nextButton = document.getElementById('nextButton'); // Nowy przycisk "Dalej"
+        const messageElement = document.getElementById('message');
+
+        // Funkcja do inicjalizacji i wyświetlania liter na stronie
+        function initializeLetters() {
+            letterContainer.innerHTML = ''; // Wyczyść kontener przed dodaniem nowych liter
+            allLetters.forEach(char => {
+                const span = document.createElement('span'); // Utwórz element <span> dla każdej litery
+                span.classList.add('letter'); // Dodaj klasę 'letter' dla stylizacji
+                span.textContent = char; // Ustaw tekst litery
+                span.addEventListener('click', () => {
+                    // Po kliknięciu na literę, przełącz klasę 'underlined'
+                    span.classList.toggle('underlined');
+                    displayMessage(); // Zaktualizuj wyświetlaną wiadomość
+                });
+                letterContainer.appendChild(span); // Dodaj literę do kontenera
+            });
+            messageElement.textContent = 'Kliknij litery, aby je podkreślić!'; // Wyświetl początkową wiadomość
+        }
+
+        // Funkcja wyświetlająca obecnie podkreślone litery
+        function displayMessage() {
+            const underlinedLetters = document.querySelectorAll('.letter.underlined');
+            if (underlinedLetters.length > 0) {
+                // Zbierz tekst z podkreślonych liter i połącz go w jedno słowo
+                const nameParts = Array.from(underlinedLetters).map(span => span.textContent).join('');
+                messageElement.textContent = `Podkreślone litery: ${nameParts}`;
+            } else {
+                messageElement.textContent = 'Kliknij litery, aby je podkreślić!';
+            }
+        }
+
+        // Dodaj słuchacza zdarzeń do przycisku resetowania
+        resetButton.addEventListener('click', initializeLetters);
+
+        // Dodaj słuchacza zdarzeń do nowego przycisku "Dalej"
+        nextButton.addEventListener('click', () => {
+            window.location.href = '2.html'; // Przekierowanie do pliku 2.html
+        });
+
+        // Wywołaj funkcję initializeLetters po załadowaniu całego DOM
+        document.addEventListener('DOMContentLoaded', initializeLetters);
+    </script>
+</body>
+</html>
